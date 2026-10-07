@@ -197,7 +197,7 @@
 
                                     <div class="dropdown-divider"></div>
 
-{{-- FORM XÓA ẨN --}}
+<!-- {{-- FORM XÓA ẨN 
 <form id="delete-form-{{ $card->id }}" 
       action="{{ route('card.destroy', $card->id) }}" 
       method="POST" 
@@ -222,7 +222,28 @@
 
                             Xóa thiệp
 
-                        </button>
+                        </button>--}} -->
+
+                        <div class="dropdown-divider"></div>
+
+{{-- FORM XÓA ẨN --}}
+<form id="delete-form-{{ $card->id }}" 
+      action="{{ route('card.destroy', $card->id) }}" 
+      method="POST" 
+      style="display: none;">
+    @csrf
+    @method('DELETE')
+</form>
+
+<button type="button"
+        class="delete-action"
+        onclick="confirmDeleteCard({{ $card->id }})">
+
+    <i class="fa fa-trash"></i>
+
+    Xóa thiệp
+
+</button>
 
                                 </div>
 

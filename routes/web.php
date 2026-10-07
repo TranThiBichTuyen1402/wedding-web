@@ -12,10 +12,10 @@ use App\Http\Controllers\Client\WeddingRsvpController;
 use App\Http\Controllers\Client\TableController;
 use App\Http\Controllers\Client\GalleryController;
 // Admin Controllers
-use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\WeddingCardController as AdminWeddingCardController;
-
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\TemplateController as AdminTemplateController;
 
 /*
 |--------------------------------------------------------------------------
@@ -138,107 +138,34 @@ Route::middleware('auth')->group(function () {
 |
 |--------------------------------------------------------------------------
 */
+/*
+|--------------------------------------------------------------------------
+| ADMIN PANEL
+|--------------------------------------------------------------------------
+*/
 
 Route::redirect('/admin', '/admin/dashboard');
 
-Route::middleware(['auth', 'isAdmin'])
-    ->prefix('admin')
-    ->name('admin.')
-    ->group(function () {
+Route::middleware(['auth', 'isAdmin'])->prefix('admin')->name('admin.')->group(function () {
 
-        /*
-        |--------------------------------------------------------------------------
-        | ADMIN DASHBOARD
-        |--------------------------------------------------------------------------
-        */
+    // 1. Dashboard tổng quan (Dùng AdminDashboardController)
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-        Route::get('/dashboard', [AdminDashboardController::class, 'index'])
-            ->name('dashboard');
+    // 2. Quản lý khách hàng
+    Route::resource('users', UserController::class);
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | QUẢN LÝ KHÁCH HÀNG
-        |--------------------------------------------------------------------------
-        */
-
-        // Danh sách khách hàng
-        Route::get('/users', [UserController::class, 'index'])
-            ->name('users.index');
-
-        // Form thêm khách hàng
-        Route::get('/users/create', [UserController::class, 'create'])
-            ->name('users.create');
-
-        // Lưu khách hàng
-        Route::post('/users/store', [UserController::class, 'store'])
-            ->name('users.store');
-
-        // Form sửa khách hàng
-        Route::get('/users/{user}/edit', [UserController::class, 'edit'])
-            ->name('users.edit');
-
-        // Cập nhật khách hàng
-        Route::put('/users/{user}', [UserController::class, 'update'])
-            ->name('users.update');
-
-        Route::delete('/wedding-cards/{card}', [AdminWeddingCardController::class, 'destroy'])
-            ->name('wedding-cards.destroy');
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | QUẢN LÝ THIỆP CƯỚI
-        |--------------------------------------------------------------------------
-        */
-
-        // Danh sách thiệp
-        Route::get('/wedding-cards', [AdminWeddingCardController::class, 'index'])
-            ->name('wedding-cards.index');
-
-        // Xem chi tiết thiệp
-        Route::get('/wedding-cards/{card}', [AdminWeddingCardController::class, 'show'])
-            ->name('wedding-cards.show');
-
-        // Form sửa thiệp
-        Route::get('/wedding-cards/{card}/edit', [AdminWeddingCardController::class, 'edit'])
-            ->name('wedding-cards.edit');
-
-
-        // Danh sách thiệp
-        Route::get('/wedding-cards', [AdminWeddingCardController::class, 'index'])
-            ->name('wedding-cards.index');
-
-        // Kích hoạt / Hủy VIP thủ công (MỚI THÊM)
-        Route::patch('/wedding-cards/{id}/toggle-vip', [AdminWeddingCardController::class, 'toggleVip'])
-            ->name('wedding-cards.toggle_vip');
-
-        // Xem chi tiết thiệp
-        Route::get('/wedding-cards/{card}', [AdminWeddingCardController::class, 'show'])
-            ->name('wedding-cards.show');
-        /*
-        |--------------------------------------------------------------------------
-        | BÀI VIẾT
-        |--------------------------------------------------------------------------
-        */
-
-        Route::get('/bai-viet', function () {
-            return view('admin.posts');
-        })->name('posts');
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | RSVP / KHÁCH MỜI
-        |--------------------------------------------------------------------------
-        */
-
-        Route::get('/khach-moi', function () {
-            return view('admin.rsvp');
-        })->name('rsvp');
-
+    // template gốc
+    Route::resource('templates', AdminTemplateController::class);
+    // 3. Quản lý thiệp cưới (Dùng AdminWeddingCardController)
+    Route::resource('wedding-cards', AdminWeddingCardController::class);
+    Route::patch('/wedding-cards/{id}/toggle-vip', [AdminWeddingCardController::class, 'toggleVip'])->name('wedding-cards.toggle-vip');
+    // 4. Quản lý Đơn hàng & Doanh thu
+    Route::get('orders', [App\Http\Controllers\Admin\OrderController::class, 'index'])->name('orders.index');
+    Route::patch('orders/{id}/status', [App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('orders.update-status');
+    // 5. Cấu hình hệ thống
+    Route::get('settings', [App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
+    Route::post('settings', [App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');    
     });
-
 
 /*
 |--------------------------------------------------------------------------

@@ -273,7 +273,7 @@ document.getElementById('btnSearchSeat')?.addEventListener('click', function(e) 
     if (!inputEl) return;
 
     let name = inputEl.value.trim();
-    let cardId = "7"; // Hoặc truyền "{{ $card->id ?? '' }}"
+    let cardId = "{{ $card->id ?? '' }}";
 
     if (!name) {
         if (resultDiv) resultDiv.innerHTML = '<div class="alert alert-warning py-2 mt-2 text-dark small">Vui lòng nhập tên!</div>';

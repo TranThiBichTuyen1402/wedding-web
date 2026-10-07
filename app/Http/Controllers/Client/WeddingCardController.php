@@ -7,6 +7,7 @@ use App\Models\WeddingCard;
 use App\Models\WeddingTable;
 use App\Models\WeddingGuest;
 use Illuminate\Http\Request;
+use App\Models\Setting;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -93,46 +94,109 @@ class WeddingCardController extends Controller
         ];
     }
 
+    // public function index(Request $request, $template_id = null)
+    // {
+    //     if ($request->filled('card_id')) {
+    //         $card = WeddingCard::with(['tables.guests'])
+    //             ->where('id', $request->card_id)
+    //             ->where('user_id', Auth::id())
+    //             ->firstOrFail();
+
+    //         $templateId = $card->template_id;
+    //         return view('client.builder', compact('card', 'templateId'));
+    //     }
+
+    //     $templateId = $template_id ?? $request->query('template', 1);
+    //     $sampleCards = $this->getSampleCardsData();
+    //     $data = $sampleCards[$templateId] ?? $sampleCards[1];
+
+    //     $card = new WeddingCard();
+    //     $card->fill($data);
+    //     $card->id = null;
+    //     $card->slug = null;
+    //     $card->is_vip = false;
+    //     $card->package_type = 'free';
+    //     $card->user_id = Auth::id();
+
+    //     return view('client.builder', compact('card', 'templateId'));
+    // }
+
     public function index(Request $request, $template_id = null)
-    {
-        if ($request->filled('card_id')) {
-            $card = WeddingCard::with(['tables.guests'])
-                ->where('id', $request->card_id)
-                ->where('user_id', Auth::id())
-                ->firstOrFail();
+{
+    // 1. Lấy cấu hình ngân hàng từ Admin DB
+    $bankConfig = [
+        'bank_name'            => Setting::get('bank_name', 'MBBank'),
+        'bank_account_number'  => Setting::get('bank_account_number', '0000451311013'),
+        'bank_account_holder'  => Setting::get('bank_account_holder', 'TRAN THI BICH TUYEN'),
+        'vip_price'            => Setting::get('vip_price', '199000'),
+        'vip_price_discount'   => Setting::get('vip_price_discount', '299000'),
+        'bank_transfer_syntax' => Setting::get('bank_transfer_syntax', 'VIP [MAMOA]'),
+    ];
 
-            $templateId = $card->template_id;
-            return view('client.builder', compact('card', 'templateId'));
-        }
+    // --- BỔ SUNG THÊM CÁC BIẾN GIÁ CẢ TẠI ĐÂY ---
+    $vipPrice = (int) $bankConfig['vip_price'];
+    $vipPriceK = ($vipPrice / 1000) . 'k';                            // Kết quả: "199k" hoặc "200k"
+    $vipPriceFormatted = number_format($vipPrice, 0, ',', '.');        // Kết quả: "199.000" hoặc "200.000"
 
-        $templateId = $template_id ?? $request->query('template', 1);
-        $sampleCards = $this->getSampleCardsData();
-        $data = $sampleCards[$templateId] ?? $sampleCards[1];
+    if ($request->filled('card_id')) {
+        $card = WeddingCard::with(['tables.guests'])
+            ->where('id', $request->card_id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
 
-        $card = new WeddingCard();
-        $card->fill($data);
-        $card->id = null;
-        $card->slug = null;
-        $card->is_vip = false;
-        $card->package_type = 'free';
-        $card->user_id = Auth::id();
-
-        return view('client.builder', compact('card', 'templateId'));
+        $templateId = $card->template_id;
+        // Bổ sung 'vipPrice', 'vipPriceK', 'vipPriceFormatted' vào compact:
+        return view('client.builder', compact('card', 'templateId', 'bankConfig', 'vipPrice', 'vipPriceK', 'vipPriceFormatted'));
     }
+
+    $templateId = $template_id ?? $request->query('template', 1);
+    $sampleCards = $this->getSampleCardsData();
+    $data = $sampleCards[$templateId] ?? $sampleCards[1];
+
+    $card = new WeddingCard();
+    $card->fill($data);
+    $card->id = null;
+    $card->slug = null;
+    $card->is_vip = false;
+    $card->package_type = 'free';
+    $card->user_id = Auth::id();
+
+    // Bổ sung 'vipPrice', 'vipPriceK', 'vipPriceFormatted' vào compact:
+    return view('client.builder', compact('card', 'templateId', 'bankConfig', 'vipPrice', 'vipPriceK', 'vipPriceFormatted'));
+}
 
     public function demo($id)
-    {
-        $sampleCards = $this->getSampleCardsData();
-        $data = $sampleCards[$id] ?? $sampleCards[1];
-        
-        $card = (object) $data;
-        $viewPath = 'client.templates.template_' . $id;
-        if (!view()->exists($viewPath)) {
-            $viewPath = 'client.templates.template_1';
-        }
+{
+    // 1. Thử tìm Template trong Database trước
+    $template = \App\Models\Template::find($id);
 
-        return view($viewPath, compact('card'));
+    if ($template) {
+        // Lấy View từ DB (Ví dụ: client.templates.template_1)
+        $viewPath = $template->view; 
+        
+        // Tạo dữ liệu giả từ Mẫu 1 để hiển thị preview
+        $sampleCards = $this->getSampleCardsData();
+        $data = $sampleCards[1]; 
+        $data['template_id'] = $id;
+        $card = (object) $data;
+
+        if (view()->exists($viewPath)) {
+            return view($viewPath, compact('card', 'template'));
+        }
     }
+
+    // 2. Dự phòng nếu không tìm thấy trong DB thì gọi theo file template_$id
+    $sampleCards = $this->getSampleCardsData();
+    $data = $sampleCards[$id] ?? $sampleCards[1];
+    $card = (object) $data;
+
+    $viewPath = 'client.templates.template_' . $id;
+    if (!view()->exists($viewPath)) {
+        $viewPath = 'client.templates.template_1';
+    }
+
+    return view($viewPath, compact('card'));
+}
 
    public function showPublicCard($slug)
 {
@@ -318,52 +382,63 @@ class WeddingCardController extends Controller
     /**
      * API Tra cứu vị trí Bàn tiệc thông minh
      */
-  public function searchTable(Request $request)
-{
-    $keyword = trim($request->get('keyword') ?? $request->get('seatNameInput') ?? '');
+ public function searchTable(Request $request)
+  {
+      $keyword = trim($request->get('keyword') ?? $request->get('seatNameInput') ?? '');
+      $cardId  = $request->get('wedding_card_id') ?? $request->get('card_id');
 
-    if (!$keyword) {
-        return response()->json(['success' => false, 'message' => 'Vui lòng nhập tên!']);
-    }
+      if (!$keyword) {
+          return response()->json(['success' => false, 'message' => 'Vui lòng nhập tên!']);
+      }
 
-    // Lấy khách từ bảng wedding_guests (bảng bạn vừa thêm SQL)
-    $guests = \App\Models\WeddingGuest::where('name', 'LIKE', "%{$keyword}%")
-        ->with('table')
-        ->get();
+      if (!$cardId) {
+          return response()->json(['success' => false, 'message' => 'Thiếu ID thiệp cưới!']);
+      }
 
-    if ($guests->count() > 0) {
-        $results = [];
-        foreach ($guests as $guest) {
-            $results[] = [
-                'guest_name' => $guest->name,
-                'table_name' => $guest->table ? $guest->table->name : 'Chưa xếp bàn',
-                'plus_ones'  => $guest->plus_ones ?? 0,
-                'note'       => $guest->note
-            ];
-        }
-        return response()->json(['success' => true, 'guests' => $results]);
-    }
+      // LẮP THÊM LỌC CHÍNH XÁC THEO THIỆP CỦA KHÁCH
+      $guests = \App\Models\WeddingGuest::where('wedding_card_id', $cardId)
+          ->where('name', 'LIKE', "%{$keyword}%")
+          ->with('table')
+          ->get();
 
-    return response()->json([
-        'success' => false,
-        'message' => "Không tìm thấy thông tin bàn tiệc cho \"{$keyword}\""
-    ]);
-}
+      if ($guests->count() > 0) {
+          $results = [];
+          foreach ($guests as $guest) {
+              $results[] = [
+                  'guest_name' => $guest->name,
+                  'table_name' => $guest->table ? $guest->table->name : 'Chưa xếp bàn',
+                  'plus_ones'  => $guest->plus_ones ?? 0,
+                  'note'       => $guest->note
+              ];
+          }
+          return response()->json(['success' => true, 'guests' => $results]);
+      }
+
+      return response()->json([
+          'success' => false,
+          'message' => "Không tìm thấy thông tin bàn tiệc cho \"{$keyword}\""
+      ]);
+  }
     /**
      * Thêm nhanh 1 khách mời từ Builder
      */
-    public function addGuest(Request $request)
+ public function addGuest(Request $request)
     {
+        $cardId = $request->input('wedding_card_id', $request->input('card_id'));
+
+        if (!$cardId) {
+            return response()->json(['success' => false, 'message' => 'Thiếu thông tin thiệp cưới!'], 422);
+        }
+
         $request->validate([
-            'wedding_card_id' => 'required|exists:wedding_cards,id',
-            'name'            => 'required|string|max:255',
-            'table_name'      => 'required|string|max:255',
+            'name'       => 'required|string|max:255',
+            'table_name' => 'required|string|max:255',
         ]);
 
-        // 1. Tự động tìm hoặc tạo Bàn tiệc
+        // 1. Tự động tìm hoặc tạo Bàn tiệc thuộc đúng thiệp này
         $table = WeddingTable::firstOrCreate(
             [
-                'wedding_card_id' => $request->wedding_card_id,
+                'wedding_card_id' => $cardId,
                 'name'            => trim($request->table_name)
             ],
             [
@@ -375,7 +450,7 @@ class WeddingCardController extends Controller
 
         // 2. Thêm khách vào Bàn đó
         $guest = WeddingGuest::create([
-            'wedding_card_id'  => $request->wedding_card_id,
+            'wedding_card_id'  => $cardId,
             'wedding_table_id' => $table->id,
             'name'             => trim($request->name),
             'plus_ones'        => $request->plus_ones ?? 0,

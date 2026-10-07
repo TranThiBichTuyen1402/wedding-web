@@ -9,7 +9,8 @@ class WeddingCardController extends Controller
 {
  public function index(Request $request)
 {
-    $query = WeddingCard::with('user');
+    // $query = WeddingCard::with('user');
+    $query = WeddingCard::with(['user', 'template']);
 
     // Tìm kiếm
     if ($request->filled('search')) {
@@ -42,16 +43,31 @@ class WeddingCardController extends Controller
 
     return view('admin.wedding-cards.index', compact('cards'));
 }
-    public function show(WeddingCard $card)
+public function show($id)
 {
-    return redirect()->route('wedding.show', $card->slug);
+    // Tìm thiệp theo ID
+    $card = \App\Models\WeddingCard::findOrFail($id);
+
+    // Lấy slug, nếu chưa có slug thì lấy tạm ID
+    $slug = $card->slug ?? $card->id;
+
+    return redirect()->route('wedding.show', ['slug' => $slug]);
 }
 public function edit(WeddingCard $card)
 {
-    return redirect()->route('card.builder', [
-        'template_id' => $card->template_id,
-        'card_id' => $card->id,
+    // Trả về view Admin thay vì đẩy sang Builder của Client
+    return view('admin.wedding-cards.edit', compact('card'));
+}
+public function update(Request $request, WeddingCard $card)
+{
+    $card->update([
+        'is_vip'  => $request->has('is_vip'),
+        'is_paid' => $request->has('is_paid'),
     ]);
+
+    return redirect()
+        ->route('admin.wedding-cards.index')
+        ->with('success', 'Cập nhật thiệp cưới thành công!');
 }
 public function destroy(WeddingCard $card)
 {

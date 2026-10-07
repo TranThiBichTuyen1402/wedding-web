@@ -140,7 +140,7 @@
 
                             <td>
 
-                                Template {{ $card->template_id }}
+                                {{ $card->template->name ?? 'Mẫu #' . $card->template_id }}
 
                             </td>
 
@@ -178,14 +178,6 @@
 
                                 </a>
 
-                                <a href="{{ route('admin.wedding-cards.edit', $card->id) }}"
-                                class="btn btn-warning btn-sm"
-                                title="Chỉnh sửa">
-
-                                    <i class="fa-solid fa-pen"></i>
-
-                                </a>
-
                                 <form action="{{ route('admin.wedding-cards.destroy', $card->id) }}"
       method="POST"
       class="d-inline"
@@ -202,6 +194,15 @@
 
     </button>
 
+</form>
+<!-- Thêm nút này bên cạnh nút Xem và Xóa -->
+<form action="{{ route('admin.wedding-cards.toggle-vip', $card->id) }}" method="POST" class="d-inline">
+    @csrf
+    <button type="submit" 
+            class="btn btn-sm {{ $card->is_vip ? 'btn-warning' : 'btn-outline-warning' }}" 
+            title="{{ $card->is_vip ? 'Hạ xuống FREE' : 'Duyệt lên VIP' }}">
+        <i class="fa-solid fa-crown"></i>
+    </button>
 </form>
 
                             </td>

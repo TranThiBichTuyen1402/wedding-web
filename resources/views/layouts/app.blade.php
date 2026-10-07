@@ -77,70 +77,80 @@
         @yield('content')
     </main>
 
-    <footer class="bg-white text-secondary py-5 px-3 border-top position-relative" style="z-index:30;">
-        <div class="container">
-            <div class="row g-5">
+   <footer class="bg-white text-secondary py-5 px-3 border-top position-relative" style="z-index:30;">
+    <div class="container">
+        <div class="row g-5">
 
-                <div class="col-12 col-md-4">
-                    <h3 class="font-cursive gradient-text fw-bold" style="font-size:2.2rem;">Wedding Web</h3>
-                    <p class="fw-semibold small" style="max-width:24rem;">
-                        Nền tảng tạo thiệp cưới điện tử hiện đại, giúp bạn chia sẻ lời mời đẹp mắt và quản lý khách mời thuận tiện hơn.
-                    </p>
-                </div>
-
-                <div class="col-6 col-md-4">
-                    <h4 class="fw-bold text-dark text-uppercase border-bottom border-wed-pink pb-2 mb-3" style="font-size:.85rem; max-width:150px; letter-spacing:.1em;">
-                        Liên kết
-                    </h4>
-                    <ul class="list-unstyled fw-bold small d-flex flex-column gap-2">
-                        <li>
-                            <a href="{{ url('/') }}" class="text-secondary text-decoration-none d-flex align-items-center gap-2">
-                                <i class="fa-solid fa-chevron-right text-wed-pink" style="font-size:10px;"></i> Trang chủ
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{{ url('/#features') }}" class="text-secondary text-decoration-none d-flex align-items-center gap-2">
-                                <i class="fa-solid fa-chevron-right text-wed-pink" style="font-size:10px;"></i> Tính năng
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{{ url('/chon-mau-thiep') }}" class="text-secondary text-decoration-none d-flex align-items-center gap-2">
-                                <i class="fa-solid fa-chevron-right text-wed-pink" style="font-size:10px;"></i> Mẫu thiệp nổi bật
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-
-                <div class="col-6 col-md-4">
-                    <h4 class="fw-bold text-dark text-uppercase border-bottom border-wed-pink pb-2 mb-3" style="font-size:.85rem; max-width:150px; letter-spacing:.1em;">
-                        Liên hệ
-                    </h4>
-                    <ul class="list-unstyled fw-bold small d-flex flex-column gap-3">
-                        <li>
-                            <a href="mailto:hello@weddingweb.vn" class="text-secondary text-decoration-none d-flex align-items-center gap-2">
-                                <i class="fa-solid fa-envelope text-wed-pink"></i> hello@weddingweb.vn
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" class="text-secondary text-decoration-none d-flex align-items-center gap-2">
-                                <i class="fa-brands fa-facebook text-primary"></i> Facebook
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" class="text-secondary text-decoration-none d-flex align-items-center gap-2">
-                                <i class="fa-solid fa-comment-sms text-info"></i> Zalo
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-
+            <!-- Cột 1: Giới thiệu -->
+            <div class="col-12 col-md-4">
+                <h3 class="font-cursive gradient-text fw-bold" style="font-size:2.2rem;">Wedding Web</h3>
+                <p class="fw-semibold small" style="max-width:24rem;">
+                    Nền tảng tạo thiệp cưới điện tử hiện đại, giúp bạn chia sẻ lời mời đẹp mắt và quản lý khách mời thuận tiện hơn.
+                </p>
             </div>
 
-            <div class="mt-5 pt-4 border-top text-center small text-secondary fw-bold">
-                <p class="mb-0">© 2026 Wedding Web. Tất cả quyền được bảo lưu.</p>
+            <!-- Cột 2: Liên kết nhanh -->
+            <div class="col-6 col-md-4">
+                <h4 class="fw-bold text-dark text-uppercase border-bottom border-wed-pink pb-2 mb-3" style="font-size:.85rem; max-width:150px; letter-spacing:.1em;">
+                    Liên kết
+                </h4>
+                <ul class="list-unstyled fw-bold small d-flex flex-column gap-2">
+                    <li>
+                        <a href="{{ url('/') }}" class="text-secondary text-decoration-none d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-chevron-right text-wed-pink" style="font-size:10px;"></i> Trang chủ
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url('/#features') }}" class="text-secondary text-decoration-none d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-chevron-right text-wed-pink" style="font-size:10px;"></i> Tính năng
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url('/chon-mau-thiep') }}" class="text-secondary text-decoration-none d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-chevron-right text-wed-pink" style="font-size:10px;"></i> Mẫu thiệp nổi bật
+                        </a>
+                    </li>
+                </ul>
             </div>
+
+          <!-- Cột 3: Liên hệ (Lấy động từ bảng settings) -->
+<div class="col-6 col-md-4">
+    <h4 class="fw-bold text-dark text-uppercase border-bottom border-wed-pink pb-2 mb-3" style="font-size:.85rem; max-width:150px; letter-spacing:.1em;">
+        Liên hệ
+    </h4>
+    <ul class="list-unstyled fw-bold small d-flex flex-column gap-3">
+        @if(!empty($settings['support_email']))
+        <li>
+            <a href="mailto:{{ $settings['support_email'] }}" class="text-secondary text-decoration-none d-flex align-items-center gap-2">
+                <i class="fa-solid fa-envelope text-wed-pink"></i> 
+                {{ $settings['support_email'] }}
+            </a>
+        </li>
+        @endif
+
+        @if(!empty($settings['support_hotline']))
+        <li>
+            <a href="https://zalo.me/{{ $settings['support_hotline'] }}" target="_blank" class="text-secondary text-decoration-none d-flex align-items-center gap-2">
+                <i class="fa-solid fa-comment-sms text-info"></i> Zalo/Hotline: {{ $settings['support_hotline'] }}
+            </a>
+        </li>
+        @endif
+
+        <li>
+            <a href="#" class="text-secondary text-decoration-none d-flex align-items-center gap-2">
+                <i class="fa-brands fa-facebook text-primary"></i> Facebook
+            </a>
+        </li>
+    </ul>
+</div>
+
         </div>
-    </footer>
+
+        <div class="mt-5 pt-4 border-top text-center small text-secondary fw-bold">
+            <p class="mb-0">© {{ date('Y') }} Wedding Web. Tất cả quyền được bảo lưu.</p>
+        </div>
+    </div>
+</footer>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

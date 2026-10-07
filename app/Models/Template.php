@@ -10,6 +10,7 @@ class Template extends Model
         'name',
         'slug',
         'view_path',
+        'view',
         'thumbnail',
         'is_vip',
         'status',

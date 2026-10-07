@@ -49,63 +49,16 @@
                                class="form-control">
                     </div>
 
-                    <div class="col-md-6 mb-3">
-
-    <label class="form-label fw-bold">
-        Gói thành viên
-    </label>
-
-    @if($user->membership == 'vip')
-
-        <div class="alert alert-warning d-flex justify-content-between align-items-center">
-
-            <div>
-                <i class="fa-solid fa-crown text-warning me-2"></i>
-
-                Khách hàng đang sử dụng
-                <strong>Gói VIP</strong>
-
-            </div>
-
-            <button
-                type="submit"
-                name="membership"
-                value="free"
-                class="btn btn-outline-danger">
-
-                Hủy VIP
-
-            </button>
-
-        </div>
-
-    @else
-
-        <div class="alert alert-light border d-flex justify-content-between align-items-center">
-
-            <div>
-
-        <i class="fa-regular fa-user me-2"></i>
-                Khách hàng đang sử dụng
-                <strong>Gói FREE</strong>
-
-            </div>
-
-            <button
-                type="submit"
-                name="membership"
-                value="vip"
-                class="btn btn-warning">
-
-                <i class="fa-solid fa-crown me-1"></i>
-
-                Kích hoạt VIP
-
-            </button>
-
-        </div>
-
-@endif
+                  <div class="col-md-6 mb-3">
+    <label class="form-label fw-bold">Gói thành viên</label>
+    <select name="membership" class="form-select">
+        <option value="free" {{ old('membership', $user->membership) == 'free' ? 'selected' : '' }}>
+            FREE (Tài khoản thường)
+        </option>
+        <option value="vip" {{ old('membership', $user->membership) == 'vip' ? 'selected' : '' }}>
+            VIP (Thành viên cao cấp)
+        </option>
+    </select>
 </div>
 
                     <div class="col-md-6 mb-3">

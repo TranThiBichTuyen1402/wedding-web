@@ -11,8 +11,16 @@ class TableController extends Controller
     public function findSeat(Request $request)
     {
         try {
-            $cardId = $request->query('card_id');
+           $cardId = $request->query('card_id');
             $keyword = trim($request->query('keyword'));
+
+            // 1. BẮT BUỘC phải có ID thiệp cưới (wedding_cards)
+            if (empty($cardId)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Thiếu thông tin thiệp cưới!'
+                ]);
+            }
 
             if (empty($keyword)) {
                 return response()->json([
@@ -21,13 +29,8 @@ class TableController extends Controller
                 ]);
             }
 
-            // Bắt đầu query dữ liệu khách mời kèm thông tin bàn
-            $query = WeddingRsvp::with('table');
-
-            // Nếu có card_id thì bắt buộc lọc theo đúng thiệp
-            if (!empty($cardId)) {
-                $query->where('wedding_card_id', $cardId);
-            }
+            // 2. BẮT BUỘC chỉ lọc đúng theo thiệp cưới này
+            $query = WeddingRsvp::with('table')->where('wedding_card_id', $cardId);
 
             // Tìm kiếm theo tên (Guest Name)
             $rsvps = $query->where('guest_name', 'LIKE', '%' . $keyword . '%')->get();

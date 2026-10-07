@@ -219,14 +219,20 @@
 
 
                 {{-- CHỈNH SỬA --}}
-                <a href="{{ route('card.builder', $card->template_id) }}"
+                <!-- <a href="{{ route('card.builder', $card->template_id) }}"
                    class="btn btn-edit">
 
                     <i class="fa fa-pen me-1"></i>
 
                     Chỉnh sửa
 
-                </a>
+                </a> -->
+                {{-- CHỈNH SỬA --}}
+            <a href="{{ route('card.builder', $card->id) }}"
+            class="btn btn-edit">
+                <i class="fa fa-pen me-1"></i>
+                Chỉnh sửa
+            </a>
 
 
                 {{-- 3 CHẤM --}}

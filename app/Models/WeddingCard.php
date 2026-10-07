@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
+use App\Models\Template;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\WeddingRsvp;
 use App\Models\WeddingTable;
@@ -40,6 +41,10 @@ class WeddingCard extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function template()
+    {
+        return $this->belongsTo(Template::class, 'template_id', 'id');
+    }
 
     public function rsvps(): HasMany
     {
@@ -57,4 +62,8 @@ class WeddingCard extends Model
     {
         return $this->hasMany(WeddingGuest::class, 'wedding_card_id');
     }
+    public function orders()
+{
+    return $this->hasMany(Order::class);
+}
 }

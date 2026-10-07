@@ -16,6 +16,7 @@ return new class extends Migration
 
             // Thông tin mẫu thiệp
             $table->string('name');
+            $table->boolean('is_vip')->default(false);
             $table->string('slug')->unique();
             $table->text('description')->nullable();
 

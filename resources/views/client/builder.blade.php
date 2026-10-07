@@ -82,7 +82,7 @@
         <div class="d-flex gap-2">
             @if(!$isVip)
                 <button type="button" class="btn btn-warning btn-sm rounded-pill px-3 fw-bold text-dark" data-bs-toggle="modal" data-bs-target="#vipUpgradeModal">
-                    👑 Nâng Cấp VIP (99k)
+                    👑 Nâng Cấp VIP ({{ isset($bankConfig['vip_price']) ? number_format($bankConfig['vip_price'] / 1000) . 'k' : '199k' }})
                 </button>
             @endif
             <button id="btnSaveCard" type="button" class="btn btn-pink btn-sm rounded-pill px-4">
@@ -364,7 +364,7 @@ rows="2">{{ old('thank_msg', $card->thank_msg) }}</textarea>
                 <tr>
                     <th class="text-start" style="width: 40%;">Tính năng</th>
                     <th style="width: 30%;">🆓 Miễn Phí</th>
-                    <th class="bg-warning bg-opacity-10 text-dark" style="width: 30%;">👑 VIP PRO (199k)</th>
+                    <th class="bg-warning bg-opacity-10 text-dark" style="width: 30%;">👑 VIP PRO ({{ $vipPriceK }})</th>
                 </tr>
             </thead>
             <tbody>
@@ -398,9 +398,9 @@ rows="2">{{ old('thank_msg', $card->thank_msg) }}</textarea>
     </div>
 
     <div class="text-center">
-    <button type="button" class="btn btn-warning btn-lg fw-bold rounded-pill px-5 shadow" onclick="openPaymentModal('vip_pro', 199000)">
-        👑 Nâng Cấp VIP PRO Ngay (Chỉ 199.000đ)
-    </button>
+    <button type="button" class="btn btn-warning btn-lg fw-bold rounded-pill px-5 shadow" onclick="openPaymentModal('vip_pro', {{ $vipPrice }})">
+    👑 Nâng Cấp VIP PRO Ngay (Chỉ {{ $vipPriceFormatted }}đ)
+</button>
 </div>
 </div>
 </div>
@@ -418,19 +418,23 @@ rows="2">{{ old('thank_msg', $card->thank_msg) }}</textarea>
                     <div class="position-relative d-inline-block p-2 bg-light border rounded-3 mb-3">
                         <img id="vietqrImg" src="" alt="Mã QR VietQR" class="img-fluid rounded" style="max-width: 250px; min-height: 250px;">
                     </div>
+                    
 
                     <div class="bg-light p-3 rounded-3 text-start small mb-3">
                         <div class="d-flex justify-content-between mb-1">
                             <span class="text-muted">Ngân hàng:</span>
-                            <strong class="text-dark">{{ config('services.vietqr.bank_id', 'MB') }}</strong>
+                            <!-- <strong class="text-dark">{{ config('services.vietqr.bank_id', 'MB') }}</strong> -->
+                            <strong class="text-dark">{{ $bankConfig['bank_name'] ?? 'MB' }}</strong>
                         </div>
                         <div class="d-flex justify-content-between mb-1">
                             <span class="text-muted">Số tài khoản:</span>
-                            <strong class="text-primary fs-6" id="displayBankAcc">{{ config('services.vietqr.account_no') }}</strong>
+                            <!-- <strong class="text-primary fs-6" id="displayBankAcc">{{ config('services.vietqr.account_no') }}</strong> -->
+                            <strong class="text-primary fs-6" id="displayBankAcc">{{ $bankConfig['bank_account_number'] ?? '' }}</strong>
                         </div>
                         <div class="d-flex justify-content-between mb-1">
                             <span class="text-muted">Chủ tài khoản:</span>
-                            <strong class="text-dark">{{ config('services.vietqr.account_name') }}</strong>
+                            <!-- <strong class="text-dark">{{ config('services.vietqr.account_name') }}</strong> -->
+                            <strong class="text-dark">{{ $bankConfig['bank_account_holder'] ?? '' }}</strong>
                         </div>
                         <div class="d-flex justify-content-between mb-1">
                             <span class="text-muted">Số tiền:</span>
@@ -445,6 +449,20 @@ rows="2">{{ old('thank_msg', $card->thank_msg) }}</textarea>
                     <button type="button" id="btnCheckPaymentStatus" class="btn btn-success w-100 rounded-pill py-2 fw-bold">
                         <i class="bi bi-check2-circle me-1"></i> Tôi Đã Chuyển Khoản Thành Công
                     </button>
+                    <div class="text-center mt-3 pt-2 border-top">
+    <p class="text-muted small mb-1">Gặp khó khăn khi thanh toán? Liên hệ ngay:</p>
+    <a href="https://zalo.me/{{ $bankConfig['support_hotline'] ?? '0799701642' }}" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill me-1">
+        <i class="bi bi-chat-dots-fill me-1"></i> Zalo: {{ $bankConfig['support_hotline'] ?? '0799701642' }}
+    </a>
+</div>
+<ul class="list-unstyled text-muted small mt-2 mb-0 text-start ps-3">
+    @if(!empty($bankConfig['support_email']))
+    <li class="mb-1">
+        <i class="bi bi-envelope-fill me-2 text-primary"></i>
+        Email: <strong>{{ $bankConfig['support_email'] }}</strong>
+    </li>
+    @endif
+</ul>
                 </div>
             </div>
         </div>
@@ -1117,9 +1135,48 @@ if (locInput) {
 }
     </script>
 <script>
-    function openPaymentModal(packageType, price) {
-    const BANK_ID = "{{ config('services.vietqr.bank_id', 'MB') }}";
-    const ACCOUNT_NO = "{{ config('services.vietqr.account_no') }}";
+//     function openPaymentModal(packageType, price) {
+//     const BANK_ID = "{{ config('services.vietqr.bank_id', 'MB') }}";
+//     const ACCOUNT_NO = "{{ config('services.vietqr.account_no') }}";
+    
+//     // Lấy ID thiệp hiện tại hoặc tạo ID ngẫu nhiên nếu chưa lưu
+//     let cardId = document.querySelector('input[name="card_id"]')?.value || Math.floor(Math.random() * 8999) + 1000;
+    
+//     // Cú pháp nội dung CK: "STD 1234" hoặc "VIP 1234"
+//     let prefix = (packageType === 'standard') ? 'STD' : 'VIP';
+//     let memo = `${prefix} ${cardId}`;
+
+//     // 1. Tạo Link VietQR chuẩn số tiền
+//     let qrApiUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact2.png?amount=${price}&addInfo=${encodeURIComponent(memo)}`;
+
+//     // 2. Gán ảnh QR và Nội dung CK
+//     document.getElementById('vietqrImg').src = qrApiUrl;
+//     document.getElementById('displayMemo').innerText = memo;
+
+//     // 3. Định dạng lại số tiền và cập nhật chữ trên giao diện
+//     let formattedPrice = new Intl.NumberFormat('vi-VN').format(price) + ' VNĐ';
+//     let packageTitle = (packageType === 'standard') ? 'Gói STANDARD' : 'Gói VIP PRO';
+
+//     document.getElementById('displayAmountText').innerText = formattedPrice;
+//     document.getElementById('displayModalTitle').innerHTML = `<i class="bi bi-qr-code-scan me-2"></i>Thanh Toán ${packageTitle} (${formattedPrice})`;
+
+//     // 4. Tráo Modal (Ẩn modal báo giá, hiện modal VietQR)
+//     let vipModalEl = document.getElementById('vipUpgradeModal');
+//     if (vipModalEl) {
+//         bootstrap.Modal.getInstance(vipModalEl)?.hide();
+//     }
+
+//     let qrModalEl = document.getElementById('vietqrPaymentModal');
+//     if (qrModalEl) {
+//         bootstrap.Modal.getOrCreateInstance(qrModalEl).show();
+//     }
+// }
+
+function openPaymentModal(packageType, price) {
+    // Lấy thông tin Ngân hàng từ biến Controller truyền sang
+    const BANK_ID = "{{ $bankConfig['bank_name'] ?? 'MBBank' }}";
+    const ACCOUNT_NO = "{{ $bankConfig['bank_account_number'] ?? '0000451311013' }}";
+    const ACCOUNT_NAME = "{{ $bankConfig['bank_account_holder'] ?? '' }}";
     
     // Lấy ID thiệp hiện tại hoặc tạo ID ngẫu nhiên nếu chưa lưu
     let cardId = document.querySelector('input[name="card_id"]')?.value || Math.floor(Math.random() * 8999) + 1000;
@@ -1128,8 +1185,8 @@ if (locInput) {
     let prefix = (packageType === 'standard') ? 'STD' : 'VIP';
     let memo = `${prefix} ${cardId}`;
 
-    // 1. Tạo Link VietQR chuẩn số tiền
-    let qrApiUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact2.png?amount=${price}&addInfo=${encodeURIComponent(memo)}`;
+    // 1. Tạo Link VietQR chuẩn số tiền và thông tin tài khoản từ DB Admin
+    let qrApiUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact2.png?amount=${price}&addInfo=${encodeURIComponent(memo)}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
 
     // 2. Gán ảnh QR và Nội dung CK
     document.getElementById('vietqrImg').src = qrApiUrl;
